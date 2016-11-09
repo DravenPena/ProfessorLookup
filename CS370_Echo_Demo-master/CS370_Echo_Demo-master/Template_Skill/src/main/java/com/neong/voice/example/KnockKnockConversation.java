@@ -231,7 +231,9 @@ public class KnockKnockConversation extends Conversation {
 
 			}
 			else{
-			String email = pc.getEmail();
+			String email;
+			for(char c : getEmail())
+				email += c + ',';;
 			String name = pc.getName();
 			response = newAskResponse("<speak> " + name + "s email address is " + " <say-as interpret-as=\"spell-out\">" + email + "</say-as>, would you like me to repeat that? You can say repeat or ask for more information.</speak>", true, " <speak> would you like me to repeat their email address? </speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
@@ -278,7 +280,9 @@ public class KnockKnockConversation extends Conversation {
 
 		if(STATE_GET_EMAIL_PHONE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
 			String name = pc.getName();
-			String email = pc.getEmail();
+			String email;
+			for(char c : getEmail())
+				email += c + ',';
 			String phone = pc.getPhone();
 			response = newTellResponse("<speak>" + name + " s email is " + " <say-as interpret-as=\"spell-out\">" + email + "</say-as> their phone number is <say-as interpret-as=\"telephone\">" + phone + "</say-as>. </speak>", true);
 			cachedList = null;
@@ -286,7 +290,9 @@ public class KnockKnockConversation extends Conversation {
 		}
 		else if (STATE_GET_EMAIL.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
 			String name = pc.getName();
-			String email = pc.getEmail();
+			String email;
+			for(char c : getEmail())
+				email += c + ',';
 			response = newTellResponse("<speak>" + name + "s email address is " + " <say-as interpret-as=\"spell-out\">" + email + " </say-as> . </speak>", true);
 			cachedList = null;
 
@@ -309,13 +315,11 @@ public class KnockKnockConversation extends Conversation {
 	 */
 	private SpeechletResponse handleYesIntent(IntentRequest intentReq, Session session)
 	{
-		
 		if(STATE_GET_EMAIL_PHONE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0)
 		{//Case where user was given both email and phone and wants it repeated.
 			return handleRepeatIntent(intentReq, session);
 		}
-		else if((STATE_GET_JOKE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-		getJoke();
+		else if((STATE_GET_JOKE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0 && joke != null){
 		return newTellResponse(joke, false);
 		}
 
@@ -340,6 +344,7 @@ public class KnockKnockConversation extends Conversation {
 
 			return newTellResponse("<speak> No thank you? sheesh, last time i help you.</speak>", true);
 		}
+		if((STATE_GET_JOKE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0 && joke != null){}
 		cachedList = null;
 
 		return newTellResponse("<speak> Please ask for professor information first.</speak>", true);
@@ -388,7 +393,7 @@ public class KnockKnockConversation extends Conversation {
 			{
 				//No Phone or Email
 				String name = pc.getName();
-				
+				response = getJoke();
 				response = newAskResponse("Sorry there is no contact information for " + pc.getName() + ". Would you like to hear a joke instead? ", false);
 				
 				cachedProf = pc;
@@ -411,7 +416,9 @@ public class KnockKnockConversation extends Conversation {
 			{
 				//Email, but no Phone
 				String name = pc.getName();
-				String email = pc.getEmail();
+				String email;
+				for(char c : getEmail())
+					email += c + ',';
 				response = newAskResponse("<speak>" + name + " has no phone listed, but their email is " + " <say-as interpret-as=\"spell-out\">" + email + "</say-as> . Would you like me to repeat that? You can say repeat or ask for more information.</speak>", true, "<speak> I did not catch that, did you want me to repeat the email address. </speak>", true);
 				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 				cachedProf = pc;
@@ -420,7 +427,9 @@ public class KnockKnockConversation extends Conversation {
 			{
 				//Email and Phone
 				String name = pc.getName();
-				String email = pc.getEmail();
+				String email;
+				for(char c : getEmail())
+					email += c + ',';
 				String phone = pc.getPhone();
 				response = newAskResponse("<speak>" + name + "s email is " + " <say-as interpret-as=\"spell-out\">" + email +  "</say-as>, their phone is " + " <say-as interpret-as=\"telephone\">" + phone + "</say-as> . Would you like me to repeat that? You can say repeat or ask for more information.</speak>", true, "<speak> I did not catch that, did you want me to repeat " + name + "'s contact info? </speak>", true);
 			}
@@ -570,8 +579,7 @@ public class KnockKnockConversation extends Conversation {
 				else
 				{
 					//neither phone nor email exist
-					getJoke();
-					response = newAskResponse("Sorry there is no contact information for " + pc.getName() + ". Would you like to hear a joke instead? ", false);
+					response = newTellResponse(pc.getName() + " has no email or phone listed. I am sorry to have failed you. I accept whatever horrific punishment you deem suitable.", false);
 					cachedList = null;
 
 				}
@@ -628,8 +636,7 @@ public class KnockKnockConversation extends Conversation {
 				else
 				{
 					//No email nor phone
-					getJoke();
-					response = newAskResponse("Sorry there is no contact information for " + pc.getName() + ". Would you like to hear a joke instead? ", false);
+					response = newTellResponse(pc.getName() + " has no email or phone listed. I am sorry to have failed you. I accept whatever horrific punishment you deem suitable.", false);
 					cachedList = null;
 
 				}

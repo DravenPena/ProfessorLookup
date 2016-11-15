@@ -309,13 +309,70 @@ public class KnockKnockConversation extends Conversation {
 					// both are null
 					response = newTellResponse (" <speak> This professor has no more info available </speak> ", false);
 				}
-				// else{
-				//	TODO response = newTellResponse (" <speak> <>")
+				else{
+					response = newAskResponse("<speak>" + name + "s phone number is " +  " <say-as interpret-as=\"telephone\">" + phonenum + " </say-as>, would you like me to repeat that? </speak>", true, " <speak> would you like me to repeat their phone number? </speak>", true);
+					session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
+				}
 			}
-			// TODO check other cases 
+			else if(pc.getPhone() == null || pc.getPhone().isEmpty()){		
+				String sp = "@ sonoma . e, d, u";
+				String name = pc.getName();
+				String email = pc.getEmail();
+				String [] parts = email.split("@");
+				String fp = parts[0].replace("",", ");
+				if(fp.contains(".")){
+					fp.replaceAll(".", "dot");
+				}
+				if(parts[1].toLowerCase() == "sonoma.edu" )
+				{
+					sp = "@ sonoma . e d u ";
+				}
+				else if(parts[1].toLowerCase() == "gmail.com" )
+				{
+					sp = "@ g mail . com ";
+				}
+				else if(parts[1].toLowerCase() == "yahoo.com" )
+				{
+					sp = "@ yahoo . com";
+				}
+				else if(parts[1].toLowerCase() == "hotmail.com" )
+				{
+					sp = "@ hot mail . com";
+				}
+				response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + "</say-as>, would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
+
+				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);				
+			}
+			else{
+			String name = pc.getName();
+			String sp = "@ sonoma . e, d, u";
+			String email = pc.getEmail();
+			String [] parts = email.split("@");
+			String fp = parts[0].replace("",", ");
+			if(fp.contains(".")){
+				fp.replaceAll(".", "dot");
+			}
+			if(parts[1].toLowerCase() == "sonoma.edu" )
+			{
+				sp = "@ sonoma . e d u ";
+			}
+			else if(parts[1].toLowerCase() == "gmail.com" )
+			{
+				sp = "@ g mail . com ";
+			}
+			else if(parts[1].toLowerCase() == "yahoo.com" )
+			{
+				sp = "@ yahoo . com";
+			}
+			else if(parts[1].toLowerCase() == "hotmail.com" )
+			{
+				sp = "@ hot mail . com";
+			}
+			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
+			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL_PHONE);			
+			}
+			
 		}
-
-
 		else
 		{
 			response = newTellResponse("<speak> Peace out cub scout! </speak>", true);

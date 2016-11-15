@@ -45,6 +45,7 @@ public class KnockKnockConversation extends Conversation {
 	private Boolean duplicates;
 	private String joke_opener;
 	private String joke_punchline;
+	private static List<>
 
 	//Intent names
 
@@ -175,6 +176,9 @@ public class KnockKnockConversation extends Conversation {
 		else if(INTENT_STOP.equals(intentName)){
 			response = handleStopIntent(intentReq, session);
 		}
+		else if(INTENT_CLASSES.equals(intentName)){
+			response = handleClassIntent(intentReq, session);
+		}
 		else {
 			response = newTellResponse("<speak> Whatchu talkin' bout! </speak>", true);
 			cachedList = null;
@@ -227,6 +231,11 @@ public class KnockKnockConversation extends Conversation {
 		response.setShouldEndSession(true);
 		return response;
 
+	}
+	private SpeechletResponse handleClassIntent(IntentRequest intentReq, Session session){
+		SpeechletResponse response = null;
+		return response;
+		
 	}
 	private SpeechletResponse handleStopIntent(IntentRequest intentReq, Session session)
 	{	

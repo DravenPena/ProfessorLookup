@@ -63,6 +63,9 @@ public class KnockKnockConversation extends Conversation {
 	private final static String INTENT_HELP = "HelpIntent"; // 13
 	private final static String INTENT_TELLJOKE = "IntentTellJoke"; // 14
 	private final static String INTENT_LOCATION = "locationIntent"; // 15
+	private final static String INTENT_AMB_LOCATION = "AmbLocationIntent"; // 16
+	private final static String INTENT_AMB_PHONE = "AmbPhoneIntent"; // 17
+	private final static String INTENT_AMB_EMAIL = "AmbEmailIntent"; // 18
 
 	//State keys 
 	private final static Integer STATE_GET_PROFESSOR = 2;
@@ -72,6 +75,7 @@ public class KnockKnockConversation extends Conversation {
 	private final static Integer STATE_AMBIGUOUS_PROF = 6;
 	private final static Integer STATE_GET_JOKE = 7;
 	private final static Integer STATE_GET_LOCATION = 8;
+	private final static Integer STATE_SPECIFY_NEED = 9; //known professor, unknown desired info
 
 	//Session state storage key
 	private final static String SESSION_PROF_STATE = "profState";
@@ -95,6 +99,9 @@ public class KnockKnockConversation extends Conversation {
 		supportedIntentNames.add(INTENT_HELP);
 		supportedIntentNames.add(INTENT_TELLJOKE);
 		supportedIntentNames.add(INTENT_LOCATION);
+		supportedIntentNames.add(INTENT_AMB_LOCATION);
+		supportedIntentNames.add(INTENT_AMB_PHONE);
+		supportedIntentNames.add(INTENT_AMB_EMAIL);
 
 	}
 
@@ -175,6 +182,19 @@ public class KnockKnockConversation extends Conversation {
 		else if(INTENT_STOP.equals(intentName)){
 			response = handleStopIntent(intentReq, session);
 		}
+		//
+		else if(INTENT_AMB_LOCATION.equals(intentName)){
+			response = handleAmbLocationIntent(intentReq, session);
+		}
+		//
+		else if(INTENT_AMB_PHONE.equals(intentName)){
+			response = handleAmbPhoneIntent(intentReq, session);
+		}
+		//
+		else if(INTENT_AMB_EMAIL.equals(intentName)){
+			response = handleAmbEmailIntent(intentReq, session);
+		}
+		//
 		else {
 			response = newTellResponse("<speak> Whatchu talkin' bout! </speak>", true);
 			cachedList = null;
@@ -232,86 +252,62 @@ public class KnockKnockConversation extends Conversation {
 	{	
 		return newTellResponse("<speak> ok, see you later alligator </speak>", true);
 	}
+	
+	private SpeechletResponse handleAmbLocationIntent(IntentRequest intentReq, Session session){
+		SpeechletResponse response = null;
+		if(STATE_SPECIFY_NEED.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
+		response = LocationIntentResponse(intentReq, session);
+		}
+		else
+		{
+		response = newTellResponse("<speak> You are a sad, strange little man, and you have my pity</speak>", true);
+		}
+		return response;
+	}
+	
+	private SpeechletResponse handleAmbPhoneIntent(IntentRequest intentReq, Session session){
+		SpeechletResponse response = null;
+		if(STATE_SPECIFY_NEED.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
+			response = PhoneNumberIntentResponse(intentReq, session);
+		}
+		else
+		{
+			response = newTellResponse("<speak> You are a sad, strange little man, and you have my pity</speak>", true);
+		}
+		return response;
+	}
+	
+	private SpeechletResponse handleAmbEmailIntent(IntentRequest intentReq, Session session){
+		SpeechletResponse response = null;
+		if(STATE_SPECIFY_NEED.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
+			response = EmailAddressIntentResponse(intentReq, session);
+		}
+		else
+		{
+			response = newTellResponse("<speak> You are a sad, strange little man, and you have my pity</speak>", true);
+		}
+		return response;
+	}
+	
 	private SpeechletResponse handleMoreInfoIntent(IntentRequest intentReq, Session session){
 		//If they have already gotten email/phone, give them the other.
 		SpeechletResponse response = null;
 		ProfContact pc = new ProfContact();
 		pc = cachedList.get(0);
 		if (STATE_GET_EMAIL.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			//We last gave email, so its time to give phone
-			if(pc.getPhone() == null || pc.getPhone().isEmpty()){ // checking if we have phone
-				String name = pc.getName();
-				response = newTellResponse("<speak>I'm sorry, I don't have any more contact info for " + name + ". </speak>", true);
-				cachedList = null;
-			}
-			else{
-				String name = pc.getName();
-				String phoneNum = pc.getPhone();
-				response = newAskResponse("<speak>" + name + "s phone number is " +  " <say-as interpret-as=\"telephone\">" + phoneNum + " </say-as>, would you like me to repeat that? </speak>", true, " <speak> would you like me to repeat their phone number? </speak>", true);
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
-			}
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s location or phone number? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
 		}
 		else if (STATE_GET_PHONE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			//We last gave phone, so its time to give email
-			if(pc.getEmail() == null || pc.getEmail().isEmpty()){ // checking if we have email
-				String name = pc.getName();
-				response = newTellResponse("<speak>I'm sorry, I don't have any more contact info for " + name + ". </speak>", true);
-				cachedList = null;
-
-			}
-			else{
-				String sp = "@ sonoma . e, d, u";
-				String name = pc.getName();
-				String email = pc.getEmail();
-				String [] parts = email.split("@");
-				String fp = parts[0].replace("",", ");
-				if(fp.contains(".")){
-					fp.replaceAll(".", "dot");
-				}
-				if(parts[1].toLowerCase() == "sonoma.edu" )
-				{
-					sp = "@ sonoma . e d u ";
-				}
-				else if(parts[1].toLowerCase() == "gmail.com" )
-				{
-					sp = "@ g mail . com ";
-				}
-				else if(parts[1].toLowerCase() == "yahoo.com" )
-				{
-					sp = "@ yahoo . com";
-				}
-				else if(parts[1].toLowerCase() == "hotmail.com" )
-				{
-					sp = "@ hot mail . com";
-				}
-				response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + "</say-as>, would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
-
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
-			}
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or location? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
 		}
-
 		else if (STATE_GET_LOCATION.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			//TODO
-			// check which parameters are null and give what we do have 
-			//If they have already gotten email/phone, give them the other.
-			if(pc.getEmail() == null || pc.getEmail().isEmpty()) {
-				String phonenum = pc.getPhone(); // give phone
-				if(pc.getPhone() == null || pc.getPhone().isEmpty()) {
-					// both are null
-					response = newTellResponse (" <speak> This professor has no more info available </speak> ", false);
-				}
-				// else{
-				//	TODO response = newTellResponse (" <speak> <>")
-			}
-			// TODO check other cases 
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or phone number? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
 		}
-
-
 		else
 		{
 			response = newTellResponse("<speak> Peace out cub scout! </speak>", true);
 		}
-
+		session.setAttribute(SESSION_PROF_STATE, STATE_SPECIFY_NEED);
 		return response;
 	}
 
@@ -399,8 +395,7 @@ public class KnockKnockConversation extends Conversation {
 
 			}
 			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true);
-
-
+			
 		}
 		else if (STATE_GET_PHONE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
 			String name = pc.getName();
@@ -504,100 +499,16 @@ public class KnockKnockConversation extends Conversation {
 	private SpeechletResponse ContactInformationIntentResponse(IntentRequest intentReq, Session session){
 		ProfContact pc = null;
 		pc = cachedList.get(0);
-
 		SpeechletResponse response = null;
-		if(pc.getName().toLowerCase() == "Kathy Morris"){
+		if(pc.getName().toLowerCase() == "Kathy Morris")
+		{
 			response = newAskResponse("Sorry there is no contact information for " + pc.getName() + ". Would you like to hear a joke instead? ", false, "Would you like to hear a joke instead? ", false);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PROFESSOR);
 		}
-		if(pc.getEmail() == null || pc.getEmail().isEmpty())
-		{
-			if(pc.getPhone() == null || pc.getPhone().isEmpty() || pc.getName().toLowerCase() == "kathy morris")
-			{
-				//No Phone or Email
-				response = newAskResponse("Sorry there is no contact information for " + pc.getName() + ". Would you like to hear a joke instead? ", false, "Would you like to hear a joke instead? ", false);
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_PROFESSOR);
-				cachedList = null;
-
-			}
-			else
-			{
-				//Phone, but no Email
-				String name = pc.getName();
-				String phone = pc.getPhone();
-				response = newAskResponse("<speak>" + name + " has no email listed, but their phone is " + " <say-as interpret-as=\"telephone\">" + phone + "</say-as> . Would you like me to repeat that? </speak>", true, "<speak> I did not catch that, You can say repeat, more information, or tell me a joke </speak>", true);
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
-			}
-		}
 		else
 		{
-			if(pc.getPhone() == null || pc.getPhone().isEmpty())
-			{
-				//Email, but no Phone
-				String name = pc.getName();
-				String sp = "@ sonoma . e, d, u";
-				String email = pc.getEmail();
-				String [] parts = email.split("@");
-				String fp = parts[0].replace("",", ");
-				if(fp.contains(".")){
-					fp.replaceAll(".", "dot");
-				}
-				if(parts[1].toLowerCase() == "sonoma.edu" )
-				{
-					sp = "@ sonoma . e d u ";
-					response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
-				}
-				else if(parts[1].toLowerCase() == "gmail.com" )
-				{
-					sp = "@ g mail . com ";
-				}
-				else if(parts[1].toLowerCase() == "yahoo.com" )
-				{
-					sp = "@ yahoo . com";
-				}
-				else if(parts[1].toLowerCase() == "hotmail.com" )
-				{
-					sp = "@ hot mail . com";
-
-				}
-
-				response = newAskResponse("<speak>" + name + " has no phone listed, but their email is " + fp + sp + "Would you like me to repeat that? You can say repeat or ask for more information.</speak>", true, "<speak> I did not catch that, did you want me to repeat the email address. </speak>", true);
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
-			}
-			else
-			{
-				//Email and Phone
-				String name = pc.getName();
-				String sp = "@ sonoma . e, d, u";
-				String email = pc.getEmail();
-				String [] parts = email.split("@");
-				String fp = parts[0].replace("",", ");
-				if(fp.contains(".")){
-					fp.replaceAll(".", "dot");
-				}
-				if(parts[1].toLowerCase() == "sonoma.edu" )
-				{
-					sp = "@ sonoma . e d u ";
-					response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
-				}
-				else if(parts[1].toLowerCase() == "gmail.com" )
-				{
-					sp = "@ g mail . com ";
-				}
-				else if(parts[1].toLowerCase() == "yahoo.com" )
-				{
-					sp = "@ yahoo . com";
-				}
-				else if(parts[1].toLowerCase() == "hotmail.com" )
-				{
-					sp = "@ hot mail . com";
-
-				}
-
-				String phone = pc.getPhone();
-				response = newAskResponse("<speak>" + name + "s email is " + fp + sp + ", their phone is " + " <say-as interpret-as=\"telephone\">" + phone + "</say-as> . Would you like me to repeat that?</speak>", true, "<speak> I did not catch that, You can say repeat, more information, or tell me a joke.</speak>", true);
-				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL_PHONE);
-			}
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address, phone number, or location? </speak> ", true, "I didn't catch that. Would you like their email address, phone number, or location?", true);
+			session.setAttribute(SESSION_PROF_STATE, STATE_SPECIFY_NEED);
 		}	
 		return response;
 	}
@@ -607,9 +518,6 @@ public class KnockKnockConversation extends Conversation {
 		// may give error if slot is empty
 		String professor_name_string = slots.get("ProfessorName").getValue();
 		SpeechletResponse response = null;
-		/*
-		 * Need to be able to handle just a professor name as an intent, or asking for a receiving a response within this handler. Not sure if possible.
-		 */
 		if(professor_name_string == "my professor" || professor_name_string == "my teacher" || professor_name_string == "a professor")
 		{
 			response = newAskResponse("<speak> What is this professor's name? </speak>", true, "<speak> I didn't catch that,  Can I have a professor name </speak>", true);
@@ -790,15 +698,39 @@ public class KnockKnockConversation extends Conversation {
 		if(pc.getEmail() != null && !pc.getEmail().isEmpty())
 		{
 			//We have email
-			response = newAskResponse("<speak> Here is " + pc.getName() + "'s email address: " + " <say-as interpret-as=\"spell-out\">" + pc.getEmail() + "</say-as> . Would you like me to repeat that or give you more info on " + pc.getName() + "? </speak>", true, "<speak>I didn't catch that, would you like me to repeat their email or give you more info?</speak>", true);
+			String name = pc.getName();
+			String sp = "@ sonoma . e, d, u";
+			String email = pc.getEmail();
+			String [] parts = email.split("@");
+			String fp = parts[0].replace("",", ");
+			if(fp.contains(".")){
+				fp.replaceAll(".", "dot");
+			}
+			if(parts[1].toLowerCase() == "sonoma.edu" )
+			{
+				sp = "@ sonoma . e d u ";
+				response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
+			}
+			else if(parts[1].toLowerCase() == "gmail.com" )
+			{
+				sp = "@ g mail . com ";
+			}
+			else if(parts[1].toLowerCase() == "yahoo.com" )
+			{
+				sp = "@ yahoo . com";
+			}
+			else if(parts[1].toLowerCase() == "hotmail.com" )
+			{
+				sp = "@ hot mail . com";
+
+			}
+			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 		}
-
-		else if(pc.getPhone() != null && !pc.getPhone().isEmpty())
+		else
 		{
-			//No email, but we have phone
-			response = newAskResponse("This professor has no email address listed. Would you like their phone?  ", false, "Would you like their phone?", false);
-			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
+			response = newAskResponse("This professor has no email address listed. Would you like more info or a joke?  ", false, "Would you like more info or a joke?", false);
+			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 		}
 		return response;
 	}

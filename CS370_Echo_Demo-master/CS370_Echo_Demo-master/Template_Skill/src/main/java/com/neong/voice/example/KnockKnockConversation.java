@@ -45,7 +45,7 @@ public class KnockKnockConversation extends Conversation {
 	private Boolean duplicates;
 	private String joke_opener;
 	private String joke_punchline;
-	private static List<>
+//	private static List<>
 
 	//Intent names
 
@@ -304,6 +304,7 @@ public class KnockKnockConversation extends Conversation {
 			// check which parameters are null and give what we do have 
 			//If they have already gotten email/phone, give them the other.
 			if(pc.getEmail() == null || pc.getEmail().isEmpty()) {
+				String name = pc.getName();
 				String phonenum = pc.getPhone(); // give phone
 				if(pc.getPhone() == null || pc.getPhone().isEmpty()) {
 					// both are null
@@ -700,7 +701,7 @@ public class KnockKnockConversation extends Conversation {
 			{
 				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL_PHONE);
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", false, "<speak> Did you mean, " + list + "</speak>", false);
+				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", true, "<speak> Did you mean, " + list + "</speak>", true);
 			}
 			else
 			{
@@ -710,7 +711,7 @@ public class KnockKnockConversation extends Conversation {
 
 		else
 		{
-			response = newAskResponse("<speak> I did not hear a professor name, can you try again </speak>", false, "<speak> I didn't catch that,  Can I have a professor name </speak>", false);
+			response = newAskResponse("<speak> I did not hear a professor name, can you try again </speak>", true, "<speak> I didn't catch that,  Can I have a professor name </speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PROFESSOR);
 		}
 		return response;
@@ -830,7 +831,7 @@ public class KnockKnockConversation extends Conversation {
 			{
 				session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("<speak> Did you man, " + list + ", say first and last name please</speak>", true, "Did you mean, " + list, false);
+				return newAskResponse("<speak> Did you man, " + list + ", say first and last name please</speak>", true, "<speak>Did you mean, " + list + "</speak>", true);
 			}
 			else
 			{
@@ -889,7 +890,7 @@ public class KnockKnockConversation extends Conversation {
 			if(cachedList.size() > 1)
 			{
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", false, "<speak> Did you mean, " + list + "</speak>", false);
+				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", true, "<speak> Did you mean, " + list + "</speak>", true);
 				//return 
 			}
 			else

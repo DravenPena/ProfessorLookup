@@ -635,6 +635,7 @@ public class KnockKnockConversation extends Conversation {
 		{
 			// phone number exists
 			response = newAskResponse("<speak> Here is " + pc.getName() + "'s phone number: " + " <say-as interpret-as=\"telephone\">" + phone_number + "</say-as> . Would you like me to repeat that or give you more info on " + pc.getName() + "?</speak>", true, "<speak> I didn't catch that, would you like me to repeat their phone number or give you more info? </speak>", true);
+			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
 		}
 
 		else if(pc.getEmail() != null && !pc.getEmail().isEmpty())

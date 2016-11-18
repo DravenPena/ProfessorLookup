@@ -45,7 +45,7 @@ public class KnockKnockConversation extends Conversation {
 	private Boolean duplicates;
 	private String joke_opener;
 	private String joke_punchline;
-//	private static List<>
+	private static List<Classes> classList = new ArrayList<Classes>();
 
 	//Intent names
 
@@ -1028,6 +1028,10 @@ public class KnockKnockConversation extends Conversation {
 				{
 					pc.setName(json.getString("name").toLowerCase());
 				}
+				if(!json.isNull("department_name"))//if value for department name is not null set the dept.
+				{
+					pc.setDept(json.getString("department_name"));
+				}
 				if(!json.isNull("building_name"))//if the value for building_name is not null, set building_name
 				{
 					pc.setBuildingName(json.getString("building_name"));
@@ -1119,6 +1123,7 @@ public class KnockKnockConversation extends Conversation {
 				}
 
 			}
+			con.close();
 			return;
 		}
 		catch (SQLException | ClassNotFoundException e)
@@ -1128,5 +1133,93 @@ public class KnockKnockConversation extends Conversation {
 			// TODO Auto-generated catch block
 			joke_opener = e.toString();
 		}
+	}
+	  
+	private void getClassesFromProf(ProfContact prof){
+		Connection con = null;
+		String sql = "";
+		Classes c = new Classes();
+		try{
+			byte[] bits = new byte[]{88, 116, 108, 97, 116, 105, 108, 112, 97, 53};
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://cwolf.cs.sonoma.edu:3306/restrella?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=PST", "restrella", new String(bits,"UTF-8"));
+			Statement stmnt = con.createStatement();
+			
+			if(prof != null) 
+				sql = "SELECT * FROM Classes WHERE Instructor LIKE '" + prof.getName() + "' AND Dept LIKE '" + prof.getDept() + "'";
+			stmnt = con.createStatement();
+			ResultSet rs = stmnt.executeQuery(sql);
+			String s;
+			int x;
+			boolean b;
+			float f;
+			
+			while(rs.next()){
+				x = rs.getInt(0);
+				if(!rs.wasNull()){
+					c.setId(x);
+				}
+				s = rs.getString(1);
+				if(!rs.wasNull()){
+					c.setShortDept(s);
+				}
+				s = rs.getString(2);
+				if(!rs.wasNull()){
+					c.setClassNum(s);
+				}
+				s = rs.getString(3);
+				if(!rs.wasNull()){
+					c.setDept(s);
+				}
+				s = rs.getString(4);
+				if(!rs.wasNull()){
+					c.setSection(s);
+				}
+				b = rs.getBoolean(5);
+				if(!rs.wasNull()){
+					c.setEth(b);
+				}
+				b = rs.getBoolean(6);
+				if(!rs.wasNull()){
+					c.setIsLab(b);
+				}
+				f = rs.getFloat(7);
+				if(!rs.wasNull()){
+					c.setUnits(f);
+				}
+				s = rs.getString(8);
+				if(!rs.wasNull()){
+					c.setGE(s);
+				}
+				s = rs.getString(9);
+				if(!rs.wasNull()){
+					c.setClassName(s);
+				}
+				s = rs.getString(10);
+				if(!rs.wasNull()){
+					c.setType(s);
+				}
+				s = rs.getString(11);
+				if(!rs.wasNull()){
+					//parse then add days
+					c.addDay(s);
+				}
+				s = rs.getString(12);
+				if(!rs.wasNull()){
+					if(s != "AMRR AMNGE")
+					c.setTime(s);
+				}
+				s = rs.getString(13);
+				if(!rs.wasNull()){
+					c.setInstructor(s);
+				}
+				classList.add(c);
+			}
+			return;
+		}	
+		catch (Exception e){
+			prof.setName(e.toString());
+		}
+		return;
 	}
 }

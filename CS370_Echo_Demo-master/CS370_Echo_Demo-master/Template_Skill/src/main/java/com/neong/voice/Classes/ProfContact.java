@@ -5,6 +5,7 @@ public class ProfContact {
 	private String name;
 	private String phone;
 	private String email;
+	private String dept;
 	private String building_name;
 	
 	public String getName(){ return name;}
@@ -13,6 +14,8 @@ public class ProfContact {
 	public void setPhone(String p) { phone = p;}
 	public String getEmail(){ return email;}
 	public void setEmail(String e) {email = e;}
+	public String getDept(){return dept;}
+	public void setDept(String s){dept = s;}
 	public String getBuildingName() { return building_name;}
 	public void setBuildingName(String b) {building_name = b;}
 	public ProfContact copy(){
@@ -20,6 +23,7 @@ public class ProfContact {
 		pc.setName(name);
 		pc.setPhone(phone);
 		pc.setEmail(email);
+		pc.setDept(dept);
 		pc.setBuildingName(building_name);
 		return pc;
 	}

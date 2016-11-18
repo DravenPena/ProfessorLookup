@@ -45,6 +45,7 @@ public class KnockKnockConversation extends Conversation {
 	private Boolean duplicates;
 	private String joke_opener;
 	private String joke_punchline;
+	private static List<Classes> classList = new ArrayList<Classes>();
 
 	//Intent names
 
@@ -195,6 +196,10 @@ public class KnockKnockConversation extends Conversation {
 			response = handleAmbEmailIntent(intentReq, session);
 		}
 		//
+		else if(INTENT_CLASSES.equals(intentName)){
+			response = handleClassIntent(intentReq, session);
+		}
+		//
 		else {
 			response = newTellResponse("<speak> Whatchu talkin' bout! </speak>", true);
 			cachedList = null;
@@ -247,6 +252,11 @@ public class KnockKnockConversation extends Conversation {
 		response.setShouldEndSession(true);
 		return response;
 
+	}
+	private SpeechletResponse handleClassIntent(IntentRequest intentReq, Session session){
+		SpeechletResponse response = null;
+		return response;
+		
 	}
 	private SpeechletResponse handleStopIntent(IntentRequest intentReq, Session session)
 	{	
@@ -542,7 +552,7 @@ public class KnockKnockConversation extends Conversation {
 			{
 				session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL_PHONE);
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("Did you mean, " + list + ", say first and last name please", false, "Did you mean, " + list, false);
+				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", true, "<speak> Did you mean, " + list + "</speak>", true);
 			}
 			else
 			{
@@ -552,7 +562,7 @@ public class KnockKnockConversation extends Conversation {
 
 		else
 		{
-			response = newAskResponse("I did not hear a professor name, can you try again", false, "I didn't catch that,  Can I have a professor name ", false);
+			response = newAskResponse("<speak> I did not hear a professor name, can you try again </speak>", true, "<speak> I didn't catch that,  Can I have a professor name </speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PROFESSOR);
 		}
 		return response;
@@ -608,7 +618,7 @@ public class KnockKnockConversation extends Conversation {
 			}
 			else
 			{
-				response = newTellResponse("error. I am unsure what peice of info was originally requested", false); //Should never happen, but if it does, heres an error message
+				response = newTellResponse("<speak> error. I am unsure what peice of information was originally requested </speak>", false); //Should never happen, but if it does, heres an error message
 			}
 			return response;
 
@@ -641,7 +651,7 @@ public class KnockKnockConversation extends Conversation {
 		else if(pc.getEmail() != null && !pc.getEmail().isEmpty())
 		{
 			// phone number doesn't exist, but email does
-			response = newAskResponse("This professor has no phone number, would you like their email ", false, "Would you like their email?", false);
+			response = newAskResponse("<speak> This professor has no phone number, would you like their email </speak>", false, "<speak> Would you like their email? </speak>", false);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 		}
 		return response;
@@ -673,7 +683,7 @@ public class KnockKnockConversation extends Conversation {
 			{
 				session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("<speak> Did you man, " + list + ", say first and last name please</speak>", true, "Did you mean, " + list, false);
+				return newAskResponse("<speak> Did you man, " + list + ", say first and last name please</speak>", true, "<speak>Did you mean, " + list + "</speak>", true);
 			}
 			else
 			{
@@ -756,7 +766,7 @@ public class KnockKnockConversation extends Conversation {
 			if(cachedList.size() > 1)
 			{
 				String list = makeListOfDistinctProfessors(session);
-				return newAskResponse("Did you mean, " + list + ", say first and last name please", false, "Did you mean, " + list, false);
+				return newAskResponse("<speak> Did you mean, " + list + ", say first and last name please </speak>", true, "<speak> Did you mean, " + list + "</speak>", true);
 				//return 
 			}
 			else
@@ -767,7 +777,7 @@ public class KnockKnockConversation extends Conversation {
 		else
 			//professor name is null or empty
 		{
-			response = newAskResponse("I did not hear a professor name, can you try again", false, "I didn't catch that,  Can I have a professor name ", false);
+			response = newAskResponse("<speak> I did not hear a professor name, can you try again</speak>", false, "<speak> I didn't catch that,  Can I have a professor name </speak>", false);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PROFESSOR);
 		}
 		return response;
@@ -822,7 +832,7 @@ public class KnockKnockConversation extends Conversation {
 
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_LOCATION);
 			session.setAttribute(SESSION_PROF_STATE_2, STATE_AMBIGUOUS_PROF);
-			response = newAskResponse("Did you mean" + list + "say first name and last name  please", false, "Did you mean, " + list, false);
+			response = newAskResponse("<speak> Did you mean" + list + "say first name and last name  please </speak>", false, "<speak> Did you mean, " + list + "</speak>", false);
 		}
 		else
 		{
@@ -893,6 +903,10 @@ public class KnockKnockConversation extends Conversation {
 				if(!json.isNull("name"))//if the value for name is not null, set the name
 				{
 					pc.setName(json.getString("name").toLowerCase());
+				}
+				if(!json.isNull("department_name"))//if value for department name is not null set the dept.
+				{
+					pc.setDept(json.getString("department_name"));
 				}
 				if(!json.isNull("building_name"))//if the value for building_name is not null, set building_name
 				{
@@ -985,6 +999,7 @@ public class KnockKnockConversation extends Conversation {
 				}
 
 			}
+			con.close();
 			return;
 		}
 		catch (SQLException | ClassNotFoundException e)
@@ -994,5 +1009,93 @@ public class KnockKnockConversation extends Conversation {
 			// TODO Auto-generated catch block
 			joke_opener = e.toString();
 		}
+	}
+	  
+	private void getClassesFromProf(ProfContact prof){
+		Connection con = null;
+		String sql = "";
+		Classes c = new Classes();
+		try{
+			byte[] bits = new byte[]{88, 116, 108, 97, 116, 105, 108, 112, 97, 53};
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://cwolf.cs.sonoma.edu:3306/restrella?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=PST", "restrella", new String(bits,"UTF-8"));
+			Statement stmnt = con.createStatement();
+			
+			if(prof != null) 
+				sql = "SELECT * FROM Classes WHERE Instructor LIKE '" + prof.getName() + "' AND Dept LIKE '" + prof.getDept() + "'";
+			stmnt = con.createStatement();
+			ResultSet rs = stmnt.executeQuery(sql);
+			String s;
+			int x;
+			boolean b;
+			float f;
+			
+			while(rs.next()){
+				x = rs.getInt(0);
+				if(!rs.wasNull()){
+					c.setId(x);
+				}
+				s = rs.getString(1);
+				if(!rs.wasNull()){
+					c.setShortDept(s);
+				}
+				s = rs.getString(2);
+				if(!rs.wasNull()){
+					c.setClassNum(s);
+				}
+				s = rs.getString(3);
+				if(!rs.wasNull()){
+					c.setDept(s);
+				}
+				s = rs.getString(4);
+				if(!rs.wasNull()){
+					c.setSection(s);
+				}
+				b = rs.getBoolean(5);
+				if(!rs.wasNull()){
+					c.setEth(b);
+				}
+				b = rs.getBoolean(6);
+				if(!rs.wasNull()){
+					c.setIsLab(b);
+				}
+				f = rs.getFloat(7);
+				if(!rs.wasNull()){
+					c.setUnits(f);
+				}
+				s = rs.getString(8);
+				if(!rs.wasNull()){
+					c.setGE(s);
+				}
+				s = rs.getString(9);
+				if(!rs.wasNull()){
+					c.setClassName(s);
+				}
+				s = rs.getString(10);
+				if(!rs.wasNull()){
+					c.setType(s);
+				}
+				s = rs.getString(11);
+				if(!rs.wasNull()){
+					//parse then add days
+					c.addDay(s);
+				}
+				s = rs.getString(12);
+				if(!rs.wasNull()){
+					if(s != "AMRR AMNGE")
+					c.setTime(s);
+				}
+				s = rs.getString(13);
+				if(!rs.wasNull()){
+					c.setInstructor(s);
+				}
+				classList.add(c);
+			}
+			return;
+		}	
+		catch (Exception e){
+			prof.setName(e.toString());
+		}
+		return;
 	}
 }

@@ -725,7 +725,7 @@ public class KnockKnockConversation extends Conversation {
 				sp = "@ hot mail . com";
 
 			}
-			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true);
+			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like more information or would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 		}
 		else

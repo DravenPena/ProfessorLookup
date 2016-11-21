@@ -18,6 +18,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.net.*;
 
 
@@ -67,7 +73,8 @@ public class KnockKnockConversation extends Conversation {
 	private final static String INTENT_AMB_LOCATION = "AmbLocationIntent"; // 16
 	private final static String INTENT_AMB_PHONE = "AmbPhoneIntent"; // 17
 	private final static String INTENT_AMB_EMAIL = "AmbEmailIntent"; // 18
-
+	private final static String INTENT_RATEMYPROFESSOR = "RateMyProfessorIntent";
+	
 	//State keys 
 	private final static Integer STATE_GET_PROFESSOR = 2;
 	private final static Integer STATE_GET_EMAIL = 3;
@@ -103,6 +110,7 @@ public class KnockKnockConversation extends Conversation {
 		supportedIntentNames.add(INTENT_AMB_LOCATION);
 		supportedIntentNames.add(INTENT_AMB_PHONE);
 		supportedIntentNames.add(INTENT_AMB_EMAIL);
+		supportedIntentNames.add(INTENT_RATEMYPROFESSOR);
 
 	}
 
@@ -198,6 +206,10 @@ public class KnockKnockConversation extends Conversation {
 		//
 		else if(INTENT_CLASSES.equals(intentName)){
 			response = handleClassIntent(intentReq, session);
+		}
+		//
+		else if(INTENT_RATEMYPROFESSOR.equals(intentName)){
+			response = handleRateMyProfessor(intentReq, session);
 		}
 		//
 		else {
@@ -1097,5 +1109,70 @@ public class KnockKnockConversation extends Conversation {
 			prof.setName(e.toString());
 		}
 		return;
+	}
+	
+	public SpeechletResponse handleRateMyProfessor(IntentRequest intentReq, Session session)
+	{
+		//return newTellResponse("failed", false);
+
+		/*
+		try {*/
+			   // Extract jSessionId from startURL for Cookies
+			   /*String startURL =  "xxxxx";
+			   Document startPage = Jsoup.connect(startURL)
+			                             .userAgent("Mozilla")
+			                             .get();
+			   Element jSessionElement = startPage.getElementById("jSessionElementID");
+			   JSessionID = getJessionIDfromElement(jSessionElement);  // own method
+
+			   // Connect to page of interest
+			   String resultURL = "xxxxxxxxxx";
+			   Document resultPage = Jsoup.connect(resultURL)
+			                              .timeout(10000)
+			                              .cookie("JSESSIONID", JSessionID)
+			                              .get();
+*/
+			try {
+				// opens and closes file http://stackoverflow.com/questions/14302886/closing-jsoup-connection
+				
+				Document doc = Jsoup.connect("http://www.ratemyprofessors.com/search.jsp?query=kooshesh").get();
+				String array = "";
+
+				//String x = doc.toString();
+				Elements links = doc.select("a");
+			    for (Element link : links) {
+			        String foundUrl = link.attr("href");
+
+			        	array += " " + foundUrl;
+
+			    }
+			    Parser parser = new Parser();
+			    
+			    parser.setUp(array);
+			    String relative_url = parser.findRelativeURL();
+
+				return newTellResponse(relative_url, false);
+				//BufferedReader rd = new BufferedReader(doc);
+				//String line;
+				//while ((line = doc.) != null)
+				//{
+					//result.append(line);
+				//}
+				//End connection
+				//rd.close();
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				return newTellResponse("failed", false);
+			}
+			//Elements newsHeadlines = doc.select("#mp-itn b a");
+			   // use html parser of JSoup to extract content
+
+			//} catch (IOException e) {
+			  // e.printStackTrace();
+			//}
+		//return newTellResponse("", false);
+		
 	}
 }

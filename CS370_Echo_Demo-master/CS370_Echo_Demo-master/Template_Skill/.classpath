@@ -23,5 +23,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/Users/David 1/Documents/Areas/SSU/Fall 2016/CS 370/project_2/java-json.jar" sourcepath="/Users/David 1/Documents/Areas/SSU/Fall 2016/CS 370/project_2/java-json.jar"/>
+	<classpathentry kind="lib" path="/Users/David 1/Downloads/jsoup-1.10.1.jar" sourcepath="/Users/David 1/Downloads/jsoup-1.10.1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

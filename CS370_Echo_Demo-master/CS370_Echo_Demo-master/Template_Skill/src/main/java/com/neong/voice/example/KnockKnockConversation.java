@@ -18,12 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.net.*;
 
 
@@ -73,8 +67,7 @@ public class KnockKnockConversation extends Conversation {
 	private final static String INTENT_AMB_LOCATION = "AmbLocationIntent"; // 16
 	private final static String INTENT_AMB_PHONE = "AmbPhoneIntent"; // 17
 	private final static String INTENT_AMB_EMAIL = "AmbEmailIntent"; // 18
-	private final static String INTENT_RATEMYPROFESSOR = "RateMyProfessorIntent";
-	
+
 	//State keys 
 	private final static Integer STATE_GET_PROFESSOR = 2;
 	private final static Integer STATE_GET_EMAIL = 3;
@@ -110,7 +103,6 @@ public class KnockKnockConversation extends Conversation {
 		supportedIntentNames.add(INTENT_AMB_LOCATION);
 		supportedIntentNames.add(INTENT_AMB_PHONE);
 		supportedIntentNames.add(INTENT_AMB_EMAIL);
-		supportedIntentNames.add(INTENT_RATEMYPROFESSOR);
 
 	}
 
@@ -206,10 +198,6 @@ public class KnockKnockConversation extends Conversation {
 		//
 		else if(INTENT_CLASSES.equals(intentName)){
 			response = handleClassIntent(intentReq, session);
-		}
-		//
-		else if(INTENT_RATEMYPROFESSOR.equals(intentName)){
-			response = handleRateMyProfessor(intentReq, session);
 		}
 		//
 		else {
@@ -317,13 +305,13 @@ public class KnockKnockConversation extends Conversation {
 		ProfContact pc = new ProfContact();
 		pc = cachedList.get(0);
 		if (STATE_GET_EMAIL.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s location or phone number? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s location or phone number? </speak> ", true, "I didn't catch that. Would you like their location or phone?", true);
 		}
 		else if (STATE_GET_PHONE.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or location? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or location? </speak> ", true, "I didn't catch that. Would you like their email or location?", true);
 		}
 		else if (STATE_GET_LOCATION.compareTo((Integer)session.getAttribute(SESSION_PROF_STATE)) == 0){
-			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or phone number? </speak> ", true, "I didn't catch that. Would you like their email or phone?", true);
+			response = newAskResponse (" <speak> Would you like " + pc.getName() + "'s email address or phone number? </speak> ", true, "I didn't catch that. Would you like their email or phone? ", true);
 		}
 		else
 		{
@@ -663,8 +651,8 @@ public class KnockKnockConversation extends Conversation {
 		else if(pc.getEmail() != null && !pc.getEmail().isEmpty())
 		{
 			// phone number doesn't exist, but email does
-			response = newAskResponse("<speak> This professor has no phone number, would you like their email </speak>", false, "<speak> Would you like their email? </speak>", false);
-			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
+			response = newAskResponse("<speak> This professor has no phone number, would you like more information or a funny joke </speak>", false, "<speak> Would you like their email? </speak>", false);
+			session.setAttribute(SESSION_PROF_STATE, STATE_GET_PHONE);
 		}
 		return response;
 	}
@@ -732,7 +720,6 @@ public class KnockKnockConversation extends Conversation {
 			if(parts[1].toLowerCase() == "sonoma.edu" )
 			{
 				sp = "@ sonoma . e d u ";
-				response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true); 
 			}
 			else if(parts[1].toLowerCase() == "gmail.com" )
 			{
@@ -747,7 +734,7 @@ public class KnockKnockConversation extends Conversation {
 				sp = "@ hot mail . com";
 
 			}
-			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like more information or would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat, more information, or tell me a joke</speak>", true);
+			response = newAskResponse("<speak> " + name + "s email address is " + fp + sp + ", would you like more information or would you like me to repeat that?</speak>", true, " <speak> I didn't catch that, You can say something like repeat that or more information please</speak>", true);
 			session.setAttribute(SESSION_PROF_STATE, STATE_GET_EMAIL);
 		}
 		else
@@ -1109,70 +1096,5 @@ public class KnockKnockConversation extends Conversation {
 			prof.setName(e.toString());
 		}
 		return;
-	}
-	
-	public SpeechletResponse handleRateMyProfessor(IntentRequest intentReq, Session session)
-	{
-		//return newTellResponse("failed", false);
-
-		/*
-		try {*/
-			   // Extract jSessionId from startURL for Cookies
-			   /*String startURL =  "xxxxx";
-			   Document startPage = Jsoup.connect(startURL)
-			                             .userAgent("Mozilla")
-			                             .get();
-			   Element jSessionElement = startPage.getElementById("jSessionElementID");
-			   JSessionID = getJessionIDfromElement(jSessionElement);  // own method
-
-			   // Connect to page of interest
-			   String resultURL = "xxxxxxxxxx";
-			   Document resultPage = Jsoup.connect(resultURL)
-			                              .timeout(10000)
-			                              .cookie("JSESSIONID", JSessionID)
-			                              .get();
-*/
-			try {
-				// opens and closes file http://stackoverflow.com/questions/14302886/closing-jsoup-connection
-				
-				Document doc = Jsoup.connect("http://www.ratemyprofessors.com/search.jsp?query=kooshesh").get();
-				String array = "";
-
-				//String x = doc.toString();
-				Elements links = doc.select("a");
-			    for (Element link : links) {
-			        String foundUrl = link.attr("href");
-
-			        	array += " " + foundUrl;
-
-			    }
-			    Parser parser = new Parser();
-			    
-			    parser.setUp(array);
-			    String relative_url = parser.findRelativeURL();
-
-				return newTellResponse(relative_url, false);
-				//BufferedReader rd = new BufferedReader(doc);
-				//String line;
-				//while ((line = doc.) != null)
-				//{
-					//result.append(line);
-				//}
-				//End connection
-				//rd.close();
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-				return newTellResponse("failed", false);
-			}
-			//Elements newsHeadlines = doc.select("#mp-itn b a");
-			   // use html parser of JSoup to extract content
-
-			//} catch (IOException e) {
-			  // e.printStackTrace();
-			//}
-		//return newTellResponse("", false);
-		
 	}
 }
